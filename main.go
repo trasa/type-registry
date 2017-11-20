@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"go/ast"
-	"go/format"
 	"go/parser"
 	"go/token"
 	"io/ioutil"
@@ -17,9 +15,9 @@ import (
 
 var (
 	inputFile   = flag.String("in", "", "input .pb.go file to generate types from")
-	outputFile  = flag.String("output", "", "output file name; default srcdir/<pbfile>.typeregistry.go")
+	outputFile  = flag.String("out", "", "output file name; default srcdir/<pbfile>.typeregistry.go")
 	packageName = flag.String("package", "", "Package name to use; default retrieved from input file")
-	fieldName   = flag.String("registryfield", "", "Field name to declare the registry under")
+	fieldName   = flag.String("registryfield", "typeregistry", "Field name to declare the registry under")
 )
 
 func Usage() {
@@ -55,12 +53,7 @@ func main() {
 	} else {
 		g.packageName = *packageName
 	}
-	// inner field name
-	if len(*fieldName) == 0 {
-		g.innerFieldName = "typeRegistry"
-	} else {
-		g.innerFieldName = *fieldName
-	}
+	g.innerFieldName = *fieldName
 
 	// find all the type specs and note them for later
 	ast.Inspect(f, func(n ast.Node) bool {
@@ -117,34 +110,4 @@ func determineFileName(inputFileName string, override string) string {
 	// add the new suffix
 	parts = append(parts, "typeregistry", "go")
 	return strings.Join(parts, ".")
-}
-
-// The state of the run.
-type Generator struct {
-	buf            bytes.Buffer //output
-	packageName    string
-	innerFieldName string
-	typeNames      map[string]bool
-}
-
-func NewGenerator() *Generator {
-	return &Generator{
-		typeNames: make(map[string]bool),
-	}
-}
-
-func (g *Generator) Printf(format string, args ...interface{}) {
-	fmt.Fprintf(&g.buf, format, args...)
-}
-
-func (g *Generator) format() []byte {
-	src, err := format.Source(g.buf.Bytes())
-	if err != nil {
-		// Should never happen, but can arise when developing this code.
-		// The user can compile the output to see the error.
-		log.Printf("warning: internal error: invalid Go generated: %s", err)
-		log.Printf("warning: compile the package to analyze the error")
-		return g.buf.Bytes()
-	}
-	return src
 }
