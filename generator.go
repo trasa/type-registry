@@ -40,11 +40,18 @@ func (g *Generator) format() []byte {
 }
 
 // Apply the transform prefix to the type name if it doesn't already
-// begin with the type name prefix
+// begin with the type name prefix, AND only apply that transform
+// if it results in a valid type name from our typeNames collection.
 func (g *Generator) transformTypeName(typeName string) string {
-	if !strings.HasPrefix(typeName, g.typenamePrefix) {
-		return fmt.Sprintf("%s%s", g.typenamePrefix, typeName)
-	} else {
+	if strings.HasPrefix(typeName, g.typenamePrefix) {
 		return typeName
 	}
+
+	// try and apply the prefix, does it give us something valid?
+	s := fmt.Sprintf("%s%s", g.typenamePrefix, typeName)
+	if _, ok := g.typeNames[s]; ok {
+		return s
+	}
+	// typenameprefix + typename isn't a known type, so just return the basic type
+	return typeName
 }
