@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/format"
 	"log"
+	"strings"
 )
 
 // The state of the run.
@@ -13,6 +14,7 @@ type Generator struct {
 	packageName    string
 	innerFieldName string
 	typeNames      map[string]bool
+	typenamePrefix string
 }
 
 func NewGenerator() *Generator {
@@ -35,4 +37,14 @@ func (g *Generator) format() []byte {
 		return g.buf.Bytes()
 	}
 	return src
+}
+
+// Apply the transform prefix to the type name if it doesn't already
+// begin with the type name prefix
+func (g *Generator) transformTypeName(typeName string) string {
+	if !strings.HasPrefix(typeName, g.typenamePrefix) {
+		return fmt.Sprintf("%s%s", g.typenamePrefix, typeName)
+	} else {
+		return typeName
+	}
 }

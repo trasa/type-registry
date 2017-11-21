@@ -14,10 +14,11 @@ import (
 )
 
 var (
-	inputFile   = flag.String("in", "", "input .pb.go file to generate types from")
-	outputFile  = flag.String("out", "", "output file name; default srcdir/<pbfile>.typeregistry.go")
-	packageName = flag.String("package", "", "Package name to use; default retrieved from input file")
-	fieldName   = flag.String("registryfield", "typeregistry", "Field name to declare the registry under")
+	inputFile      = flag.String("in", "", "input .pb.go file to generate types from")
+	outputFile     = flag.String("out", "", "output file name; default srcdir/<pbfile>.typeregistry.go")
+	packageName    = flag.String("package", "", "Package name to use; default retrieved from input file")
+	fieldName      = flag.String("registryfield", "typeregistry", "Field name to declare the registry under")
+	typenamePrefix = flag.String("typenameprefix", "", "Prefix to add to the type name values emitted")
 )
 
 func Usage() {
@@ -54,6 +55,7 @@ func main() {
 		g.packageName = *packageName
 	}
 	g.innerFieldName = *fieldName
+	g.typenamePrefix = *typenamePrefix
 
 	// find all the type specs and note them for later
 	ast.Inspect(f, func(n ast.Node) bool {
@@ -80,8 +82,7 @@ func main() {
 	g.Printf("\n")
 	g.Printf("func init() {\n")
 	for t := range g.typeNames {
-		// TODO need to transform these names
-		g.Printf("%s[\"%s\"] = reflect.TypeOf(%s{})\n", g.innerFieldName, t, t)
+		g.Printf("%s[\"%s\"] = reflect.TypeOf(%s{})\n", g.innerFieldName, t, g.transformTypeName(t))
 	}
 	g.Printf("}")
 
