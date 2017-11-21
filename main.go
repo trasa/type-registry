@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	inputFile      = flag.String("in", "", "input .pb.go file to generate types from")
+	inputFile      = flag.String("in", "", "input file to generate type registry from")
 	outputFile     = flag.String("out", "", "output file name; default srcdir/<pbfile>.typeregistry.go")
 	packageName    = flag.String("package", "", "Package name to use; default retrieved from input file")
 	fieldName      = flag.String("registryfield", "typeregistry", "Field name to declare the registry under")
