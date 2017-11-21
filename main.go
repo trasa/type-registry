@@ -61,10 +61,13 @@ func main() {
 	ast.Inspect(f, func(n ast.Node) bool {
 		switch x := n.(type) {
 		case *ast.TypeSpec:
-			s := x.Name.Name
-			// exported type name?
-			if unicode.IsUpper([]rune(s)[0]) {
-				g.typeNames[s] = true
+			switch x.Type.(type) {
+			case *ast.StructType:
+				s := x.Name.Name
+				// exported type name?
+				if unicode.IsUpper([]rune(s)[0]) {
+					g.typeNames[s] = true
+				}
 			}
 		}
 		return true
