@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/format"
 	"log"
+	"sort"
 	"strings"
 )
 
@@ -54,4 +55,13 @@ func (g *Generator) transformTypeName(typeName string) string {
 	}
 	// typenameprefix + typename isn't a known type, so just return the basic type
 	return typeName
+}
+
+func (g *Generator) SortedTypeNames() []string {
+	var typeNames []string
+	for t := range g.typeNames {
+		typeNames = append(typeNames, t)
+	}
+	sort.Strings(typeNames)
+	return typeNames
 }

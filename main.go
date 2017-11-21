@@ -84,9 +84,12 @@ func main() {
 	g.Printf("var %s = make(map[string]reflect.Type)\n", g.innerFieldName)
 	g.Printf("\n")
 	g.Printf("func init() {\n")
-	for t := range g.typeNames {
+
+	// generated code needs to be stable to avoid churning source control
+	for _, t := range g.SortedTypeNames() {
 		g.Printf("%s[\"%s\"] = reflect.TypeOf(%s{})\n", g.innerFieldName, t, g.transformTypeName(t))
 	}
+
 	g.Printf("}")
 
 	src := g.format()
